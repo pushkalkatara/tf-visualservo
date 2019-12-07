@@ -4,9 +4,12 @@ import cv2
 import numpy as np
 
 class Model(object):
-    def __init__(self):
-        self.x1 = tf.placeholder(tf.float32, [None, 384, 512, 3], name='x1')  # image1
-        self.x2 = tf.placeholder(tf.float32, [None, 384, 512, 3], name='x2')  # image2
+    def __init__(self, img1, img2):
+        # Input Scale and Mean Subtraction in Data Preprocessing scripts
+        #self.x1 = tf.placeholder(tf.float32, [None, 384, 512, 3], name='x1')  # image1
+        #self.x2 = tf.placeholder(tf.float32, [None, 384, 512, 3], name='x2')  # image2
+        self.x1 = img1
+        self.x2 = img2
         self.output = tf.placeholder(tf.float32, [], name='output')
         with tf.variable_scope('conv'):
             concat1 = tf.concat(3, [self.x1, self.x2])
