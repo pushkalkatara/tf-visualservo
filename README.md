@@ -1,5 +1,5 @@
 #Visual Servoing
 
-**Author** Ayush Gaud
+## IBVS using Deep Neural Networks
 
-**Description** IBVS using Deep Neural Networks
+Tensorflow based implementation of Image Based Visual Servoing.
