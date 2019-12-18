@@ -45,6 +45,9 @@ out = {}
 tmp = tempfile.NamedTemporaryFile(mode='w', delete=False)
 print(tmp.name)
 
+#Caffe:      [number of filters (0), depth (1), height (2), width (3)]
+#Tensorflow: [height (2), width (3), depth (1), number of filters (0)]
+
 for(caffe_param, tf_param) in PARAMS.items():
     out[tf_param + '/weights'] = net.params[caffe_param][0].data.transpose((2, 3, 1, 0))
     out[tf_param + '/biases'] = net.params[caffe_param][1].data
@@ -54,18 +57,21 @@ for(caffe_param, tf_param) in PARAMS.items():
 # reshape to caffe cnn format
 # change to tensorflow format
 # again reshape to fc format
+print()
 print(net.params['Convolution5'][0].data.shape)
 print(net.params['fc7'][0].data.shape)
 temp = net.params['fc7'][0].data.reshape((4096, 2, 96, 128))
 temp = temp.transpose((2, 3, 1, 0))
-print(temp.shape)
-out['deconv/fc7/kernel'] = temp.reshape((24576, 4096))
-out['deconv/fc7/bias'] = net.params['fc7'][1].data
+out['deconv/fc7/weights'] = temp.reshape((24576, 4096))
+print(out['deconv/fc7/weights'].shape)
+out['deconv/fc7/biases'] = net.params['fc7'][1].data
 
-out['deconv/fc_pose_xyz/kernel'] = net.params['fc_pose_xyz'][0].data.transpose((1,0))
-out['deconv/fc_pose_xyz/bias'] = net.params['fc_pose_xyz'][1].data
+out['deconv/fc_pose_xyz/weights'] = net.params['fc_pose_xyz'][0].data.transpose((1,0))
+print(out['deconv/fc_pose_xyz/weights'].shape)
+out['deconv/fc_pose_xyz/biases'] = net.params['fc_pose_xyz'][1].data
 
-out['deconv/fc_pose_wpqr/kernel'] = net.params['fc_pose_wpqr'][0].data.transpose((1,0))
-out['deconv/fc_pose_wpqr/bias'] = net.params['fc_pose_wpqr'][1].data
+out['deconv/fc_pose_wpqr/weights'] = net.params['fc_pose_wpqr'][0].data.transpose((1,0))
+print(out['deconv/fc_pose_wpqr/weights'].shape)
+out['deconv/fc_pose_wpqr/biases'] = net.params['fc_pose_wpqr'][1].data
 
 np.save(tmp, out)

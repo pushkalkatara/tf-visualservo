@@ -3,7 +3,7 @@ slim = tf.contrib.slim
 import numpy as np
 import sys, os
 
-parameters = np.load('/tmp/tmp4g8Zjx', allow_pickle=True)
+parameters = np.load('/tmp/tmpHrKPms', allow_pickle=True)
 parameters = parameters[()]
 
 for(name, param) in parameters.iteritems():
