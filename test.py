@@ -150,37 +150,7 @@ class StrafeRight(SimulatorTaskAction):
     def step(self, *args, **kwargs):
         return self._sim.step(HabitatSimActions.STRAFE_RIGHT)
 
-
-def main():
-    HabitatSimActions.extend_action_space("STRAFE_LEFT")
-    HabitatSimActions.extend_action_space("STRAFE_RIGHT")
-
-    config = habitat.get_config(config_paths="habitat-configs/pointnav.yaml")
-    config.defrost()
-
-    config.TASK.POSSIBLE_ACTIONS = config.TASK.POSSIBLE_ACTIONS + [
-        "STRAFE_LEFT",
-        "STRAFE_RIGHT",
-    ]
-    config.TASK.ACTIONS.STRAFE_LEFT = habitat.config.Config()
-    config.TASK.ACTIONS.STRAFE_LEFT.TYPE = "StrafeLeft"
-    config.TASK.ACTIONS.STRAFE_RIGHT = habitat.config.Config()
-    config.TASK.ACTIONS.STRAFE_RIGHT.TYPE = "StrafeRight"
-    config.SIMULATOR.ACTION_SPACE_CONFIG = "NoNoiseStrafe"
-    config.freeze()
-
-    env = habitat.Env(config=config)
-    o1 = env.reset()
-    print(env._sim.get_agent_state())
-    curr_pose = env._sim.get_agent_state().position
-    curr_pose = {'x':curr_pose[0], 'y':curr_pose[1], 'z':curr_pose[2]}
-    img1 = cv2.resize(o1['rgb'], (512,384), interpolation = cv2.INTER_LINEAR)
-
-
-    o2 = env.step("STRAFE_LEFT")
-    print(env._sim.get_agent_state())
-    img2 = cv2.resize(o2['rgb'], (512,384), interpolation = cv2.INTER_LINEAR)
-
+def calc_error(img1, img2, curr_pose):
     m = model.Model()
 
     posexyz, poseq = None, None
@@ -220,20 +190,76 @@ def main():
 
 
     cv2.imshow('Final Image', img2)
+    cv2.imwrite('Final Image.jpg', img2)
     cv2.waitKey(30)
     cv2.imshow('Current Image', img1)
+    cv2.imwrite('Current Image.jpg', img1)
     cv2.waitKey(30)
 
 
     error = abs(prev['x'] - cmd['x']) + \
                 abs(prev['y'] - cmd['y']) + \
                 abs(prev['z'] - cmd['z'])
+
     thr = 5e-2
     print("Error: ", error)
     if error >= thr:
         print("Position: ", prev)
         print("Error: ", error)
         print("Linear: ", cmd)
+
+
+def main():
+    HabitatSimActions.extend_action_space("STRAFE_LEFT")
+    HabitatSimActions.extend_action_space("STRAFE_RIGHT")
+
+    config = habitat.get_config(config_paths="habitat-configs/pointnav.yaml")
+    config.defrost()
+
+    config.TASK.POSSIBLE_ACTIONS = config.TASK.POSSIBLE_ACTIONS + [
+        "STRAFE_LEFT",
+        "STRAFE_RIGHT",
+    ]
+    config.TASK.ACTIONS.STRAFE_LEFT = habitat.config.Config()
+    config.TASK.ACTIONS.STRAFE_LEFT.TYPE = "StrafeLeft"
+    config.TASK.ACTIONS.STRAFE_RIGHT = habitat.config.Config()
+    config.TASK.ACTIONS.STRAFE_RIGHT.TYPE = "StrafeRight"
+    config.SIMULATOR.ACTION_SPACE_CONFIG = "NoNoiseStrafe"
+    config.freeze()
+
+    env = habitat.Env(config=config)
+    o1 = env.reset()
+    print(env._sim.get_agent_state())
+    curr_pose = env._sim.get_agent_state().position
+    curr_pose = {'x':curr_pose[0], 'y':curr_pose[1], 'z':curr_pose[2]}
+    img1 = cv2.resize(o1['rgb'], (512,384), interpolation = cv2.INTER_LINEAR)
+
+    calc_error(img1, img1, curr_pose)
+
+    env.step("STRAFE_LEFT")
+    env.step("STRAFE_LEFT")
+    env.step("STRAFE_LEFT")
+    env.step("STRAFE_LEFT")
+    o2 = env.step("STRAFE_LEFT")
+
+    print(env._sim.get_agent_state())
+    img2 = cv2.resize(o2['rgb'], (512,384), interpolation = cv2.INTER_LINEAR)
+
+    calc_error(img1, img2, curr_pose)
+    env.step("STRAFE_RIGHT")
+    env.step("STRAFE_RIGHT")
+    env.step("STRAFE_RIGHT")
+    o3 = env.step("STRAFE_RIGHT")
+    curr_pose = env._sim.get_agent_state().position
+    curr_pose = {'x':curr_pose[0], 'y':curr_pose[1], 'z':curr_pose[2]}
+
+    img3 = cv2.resize(o3['rgb'], (512,384), interpolation = cv2.INTER_LINEAR)
+    calc_error(img1, img3, curr_pose)
+
+
+
+
+
 
     env.close()
 
