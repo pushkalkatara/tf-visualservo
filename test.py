@@ -234,8 +234,6 @@ def main():
     curr_pose = {'x':curr_pose[0], 'y':curr_pose[1], 'z':curr_pose[2]}
     img1 = cv2.resize(o1['rgb'], (512,384), interpolation = cv2.INTER_LINEAR)
 
-    calc_error(img1, img1, curr_pose)
-
     env.step("STRAFE_LEFT")
     env.step("STRAFE_LEFT")
     env.step("STRAFE_LEFT")
